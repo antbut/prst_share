@@ -1,0 +1,17 @@
+thead th {
+ 
+  background: white;
+  border-style: solid;
+  border-color: #000;
+  text-align: center;
+	height:45px;
+	z-index: 101;
+}
+th{
+	text-align: center;
+  border: 1px solid gray;
+}
+
+
+
+    
