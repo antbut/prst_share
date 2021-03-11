@@ -200,7 +200,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // согласование Директора сервисного центра 
     // поправить статус когда будет вид
-    if(\Yii::$app->user->can('Oblenergo') && $model->status_objekt==4 ){ 
+    if(\Yii::$app->user->can('Oblenergo') && $model->status_dir_sc!=1&& (($model->status_objekt==4 && $model->tupe_prodj_work==1)|| ($model->tupe_prodj_work==2 && $model->status_objekt==20 )) ){ 
       echo "<br>";
          echo Html::a(Yii::t('app', 'Погоджую смету Д'), ['pidrcoments/agree', 'id_project' => $model->id, 'tupe_coment'=>2 ], ['class' => 'btn btn-success']);
        // echo Html::a(Yii::t('app', 'Є правки стосовно смети'), ['pidrcoments/coment', 'id_project' => $model->id, 'tupe_coment'=>2 ], ['class' => 'btn btn-primary']);    
@@ -223,24 +223,26 @@ $this->params['breadcrumbs'][] = $this->title;
     }
 
     // Завантажити остаточну версію Смети П2
-    if(\Yii::$app->user->can('uploadProjectFiles') && $model->status_objekt==5 ){
+    if(\Yii::$app->user->can('uploadProjectFiles') && $model->status_objekt==5 && $model->file_vor_final!=null && $model->tupe_prodj_work!=2){
       
-      echo Html::a(Yii::t('app', 'Завантажити остаточну версію Смети П2'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'end'], ['class' => 'btn btn-primary']);
-
-     // echo Html::a(Yii::t('app', 'Задати остаточну ціну П '), ['addobjectprice', 'id' => $model->id, 'tupe'=>0], ['class' => 'btn btn-primary']);
-
       echo '<p  class="btn btn-primary ent_texta_price" data-id="'.$model->id.'" data-type= 0 > Задати остаточну ціну П2</p>';
+
+      echo Html::a(Yii::t('app', 'Завантажити остаточну версію Смети П2'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'end'], ['class' => 'btn btn-primary']);
+           
     }
 
-    if(\Yii::$app->user->can('uploadProjectFiles') && $model->status_objekt==4 && $model->tupe_prodj_work==1){
-         echo Html::a(Yii::t('app', 'Завантажити Смету Д'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'d'], ['class' => 'btn btn-primary']);
-    }
+    
     // Завантажити остаточну версію Смети Д по Д2
+
+
     if(\Yii::$app->user->can('uploadProjectFiles') && $model->status_objekt==4 && $model->tupe_prodj_work==2){
-        echo Html::a(Yii::t('app', 'Завантажити Проект'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>2], ['class' => 'btn btn-primary']);
-        echo Html::a(Yii::t('app', 'Завантажити остаточну версію Смети П2'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'end'], ['class' => 'btn btn-primary']);
+       echo '<p  class="btn btn-primary ent_texta_price" data-id="'.$model->id.'" data-type= 1 > Задати ціну Д </p>';
+        echo Html::a(Yii::t('app', 'Завантажити Проект'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>2, 'smeta_tupe'=>'p_d2'], ['class' => 'btn btn-primary']);
+        echo Html::a(Yii::t('app', 'Завантажити остаточну версію Смети П2'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'p_d2'], ['class' => 'btn btn-primary']);
+        echo Html::a(Yii::t('app', 'Завантажити Смету Д'), ['uploadprojektfile', 'id_project' => $model->id, 'type_file'=>3, 'smeta_tupe'=>'d_d2'], ['class' => 'btn btn-primary']);
 
     }
+
     // ответ на согласование подрядчка
     if(\Yii::$app->user->can('setPidradnikAnsver') && $model->status_objekt==1 && ($model->status_pidr==5 || $model->status_pidr==4)){ 
       echo "<br>";
@@ -255,8 +257,8 @@ $this->params['breadcrumbs'][] = $this->title;
         echo Html::a(Yii::t('app', 'Відміна підрядника'), ['pidrcoments/killpidr', 'id_project' => $model->id, ], ['class' => 'btn btn-danger']);
     }
 
-    //поглження підрядчика смети остаточної П2
-      if(\Yii::$app->user->can('setPidradnikStatus') && $model->status_objekt==4){ 
+    //поглження підрядиком смети остаточної П2
+      if(\Yii::$app->user->can('setPidradnikStatus') && $model->status_pidr!=1 &&($model->status_objekt==6 || $model->status_objekt==20) ){ 
       echo "<br>";
         echo Html::a(Yii::t('app', 'Погоджую ПКД'), ['pidrcoments/agree', 'id_project' => $model->id, 'tupe_coment'=>1 ], ['class' => 'btn btn-success']);
       //  echo Html::a(Yii::t('app', 'Є правки стосовно ПКД'), ['pidrcoments/coment', 'id_project' => $model->id, 'tupe_coment'=>1 ], ['class' => 'btn btn-primary']);
@@ -339,17 +341,44 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php }
           if(\Yii::$app->user->can('viewFiles_Smeta') ){ ?>
             <div class="col-lg-3" style="border-right: 2px dashed black; border-left: 2px dashed black; border-top: 2px dashed black; margin-bottom: 20px">
-              <h4 align="center"><p> файли смети <p></h4>
+              <h4 align="center"><p> файли смети П <p></h4>
 
                 <?php
                   if($model->files_smeta!= null){
                     foreach (json_decode ($model->files_smeta,true) as  $value) {
-                      //echo '<p>'. $value['name'];
-                      if(\Yii::$app->user->can('Oblenergo') && ($value['s_type']=='p' || $value['s_type']=='pn')){
-
-                      }else{
+                     
+                      if(($value['s_type']=='p' || $value['s_type']=='pn' || $value['s_type']=='end' || $value['s_type']=='p_d2')){
                         echo 'смета '. ($value['s_type']=='end' ? 'Остаточна версія П2 ' : ($value['s_type']=='pn' ? 'p скоригована' : $value['s_type'] ) ).'   ';
                         echo date('d.m.Y',Files::findOne($value['id'])->data_create).' <a href="'.Url::to(['files/viewfile', 'id' => $value['id']]).'"  target="_blank">'.$value['name'].'</a><br>';
+                      }else{
+                     
+                      }
+                    }
+                  }else{
+                    echo "<p>Файли ще не завантажено";
+                  }
+
+                ?>
+
+            </div>
+          <?php  } 
+          if(\Yii::$app->user->can('viewFiles_Smeta') ){ ?>
+            <div class="col-lg-3" style="border-right: 2px dashed black; border-left: 2px dashed black; border-top: 2px dashed black; margin-bottom: 20px">
+              <h4 align="center"><p> файли смети Д<p></h4>
+
+                <?php
+                  if($model->files_smeta!= null){
+                    foreach (json_decode ($model->files_smeta,true) as  $value) {
+                      
+                      if( ($value['s_type']=='p' || $value['s_type']=='pn' || $value['s_type']=='end' || $value['s_type']=='p_d2')){
+
+                      }else{
+                        if(\Yii::$app->user->can('Oblenergo') && $model->tupe_prodj_work==0){
+
+                        }else{
+                          echo 'смета '. ($value['s_type']=='end' ? 'Остаточна версія П2 ' : ($value['s_type']=='pn' ? 'p скоригована' : $value['s_type'] ) ).'   ';
+                          echo date('d.m.Y',Files::findOne($value['id'])->data_create).' <a href="'.Url::to(['files/viewfile', 'id' => $value['id']]).'"  target="_blank">'.$value['name'].'</a><br>';
+                        }
                       }
                     }
                   }else{
@@ -366,7 +395,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php
                     if($model->file_resoyrs_report!= null){
                       foreach (json_decode ($model->file_resoyrs_report,true) as  $value) {
-                        //echo '<p>'. $value['name'];
                         echo 'Відомість '. $value['r_type'].'   ';
                         echo date('d.m.Y',Files::findOne($value['id'])->data_create).' <a href="'.Url::to(['files/viewfile', 'id' => $value['id']]).'"  target="_blank">'.$value['name'].'</a><br>';
                       }
@@ -375,9 +403,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 ?>
             </div>
-          <?php } 
-          if(\Yii::$app->user->can('viewFiles_Resoyrce_report') ){?>
-            <div class="col-lg-3" style="border-top: 2px dashed black; border-left:  2px dashed black; margin-bottom: 20px">
+          <?php } ?>
+          
+
+      </div>
+
+     
+    </div>
+
+     <div class="row" style="border: 2px dashed black; border-top: none; margin-right: 10px; margin-bottom: 50px; margin-top: -48px; ">
+       <?php if(\Yii::$app->user->can('viewFiles_Resoyrce_report') ){?>
+            <div class="col-lg-3" style="border-right: 2px dashed black; margin-bottom: 20px">
               <h4 align="center"><p> файли KB3 <p></h4>
                 <?php
                     if($model->files_kb!= null){
@@ -391,13 +427,23 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 ?>
             </div>
+          <?php } 
+          if(\Yii::$app->user->can('viewFiles_Resoyrce_report') ){?>
+            <div class="col-lg-3" style="border-right: 2px dashed black; border-left:  2px dashed black; margin-bottom: 20px">
+              <h4 align="center"><p> Відомість ресурсів підписана <p></h4>
+                <?php
+                    if($model->file_vor_final!= null){
+                      foreach (json_decode ($model->file_vor_final,true) as  $value) {
+                        echo 'Відомість '. $value['r_type'].'   ';
+                        echo date('d.m.Y',Files::findOne($value['id'])->data_create).' <a href="'.Url::to(['files/viewfile', 'id' => $value['id']]).'"  target="_blank">'.$value['name'].'</a><br>';
+                      }
+                    }else{
+                      echo "<p>Файли ще не завантажено";
+                    }
+                ?>
+            </div>
           <?php } ?>
-
-      </div>
-     
-    </div>
-
-    
+     </div>
 
     </div>
 <hr><br><br>

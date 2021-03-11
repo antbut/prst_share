@@ -26,7 +26,8 @@ use app\models\ObjektStatus;
 use app\models\ProjektTupes;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use  app\models\DistriktPidr;
+use app\models\DistriktPidr;
+use app\models\Mail;
 
 use kekaadrenalin\imap;
 use kekaadrenalin\imap\Mailbox;
@@ -141,7 +142,7 @@ class MainController extends Controller
     {
         $searchModel = new MainSearch();
 
-
+        Mail::GetMail_Resourse();
         if(\Yii::$app->user->can('admin') ){ 
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         }elseif(\Yii::$app->user->can('dir_dep_pkv') ){ 
@@ -633,19 +634,22 @@ class MainController extends Controller
 
                         break;
                         case 5:
-                            $model->file_kb=json_encode($data_file);
+                            $model->files_kb=json_encode($data_file);
                             $model->status_objekt=8;
+
+                            $model->close_objekt=1;    // мітка що обєкт закрито
                         break;
 
                     }
                     // якщо завантажено все з пункту 1
-                    if( $model->files_pojekt!=null &&  $model->files_smeta!=null && $model->price_pidr!=0 && $model->pidr!=0 && $model->status_objekt==0 && $model->price_dogovor!=0 && $model->file_resoyrs_report!= null){
+                    if( $model->files_pojekt!=null &&  $model->files_smeta!=null && $model->price_pidr!=0 && $model->pidr!=0 && $model->status_objekt==0 && $model->price_dogovor!=0 && $model->file_resoyrs_report!= null && $model->status_objekt==0){
 
                          // добавить проверку по смете П и Д
-                       
-                            $model->status_objekt=1;
-							$model->data_add_dok_poj=time();
-							
+                        
+
+                              $model->status_objekt=1;
+							  $model->data_add_dok_poj=time();
+						
                         
                     }
                     
@@ -663,7 +667,7 @@ class MainController extends Controller
 
 
                     // якщо завантажуємо оcтаточну версію П2 змінить статус обєкта
-                    if($model->price_pidr_end!=0 && $model->status_objekt==5){
+                    if($model->price_pidr_end!=0 && $model->status_objekt==5 && $model->tupe_prodj_work!=2){
                         foreach (json_decode($model->files_smeta, true) as $key => $value) {
                             if($value['s_type']=='end'){
                                foreach (json_decode($model->files_pojekt, true) as $key => $value) {
@@ -681,8 +685,8 @@ class MainController extends Controller
                     }
 
 
-                    // загрузка смета Д2
-                    if($model->status_objekt==4){
+                    // загрузка смета Д2 по д1
+                    if($model->status_objekt==4 && $model->tupe_prodj_work!=2){
                         if($model->price_dogovor_end!=0){
                             foreach (json_decode($model->files_smeta, true) as $key => $value) {
                                 if($value['s_type']=='d'){
@@ -692,6 +696,34 @@ class MainController extends Controller
                             }
                         }
                     }
+
+                    // Загрузка по Д2 маршруту
+                    if($model->status_objekt==4 && $model->tupe_prodj_work==2){
+                    //    Yii::$app->session->setFlash('info', 'файли ');
+                        foreach (json_decode($model->files_pojekt, true) as $key => $value) {
+                            if($value['p_type']=='p_d2'){
+                         //       Yii::$app->session->setFlash('warning', 'файли проекту');
+                               foreach (json_decode($model->files_smeta, true) as $key => $value_s) {
+                                    if($value_s['s_type']=='p_d2'){
+                                  //      Yii::$app->session->setFlash('info ', 'файли смета П');
+                                        foreach (json_decode($model->files_smeta, true) as $key => $value_ss) {
+                                            if($value_ss['s_type']=='d_d2'){
+                                        //        Yii::$app->session->setFlash('danger', 'файли смета Д');
+                                                $model->status_objekt=20;
+                                                break;
+                                            }
+                                        }
+                                        break;  
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        
+                    }
+
+
+
 					$model->date_last_update=time();
                     $model->save(false);
                     return $this->redirect(['view', 'id' => $model->id]);
@@ -1106,9 +1138,7 @@ class MainController extends Controller
             $model->tupe_prodj_work=$tupe;
             $model->status_objekt=4;
             $model->save(false);
-            return $this->render('view', [
-                    'model' => $model, 
-                ]);
+            return $this->redirect(['view', 'id' => $model->id]);
     }
 
 
@@ -1120,7 +1150,7 @@ class MainController extends Controller
 
         $mailIds = $mailbox->searchMailBox(); // Gets all Mail ids.
         
-        $mailIds=Mail::GetMail();
+      //  $mailIds=Mail::GetMail();
     
         foreach($mailIds as $mailId){
             // Returns Mail contents

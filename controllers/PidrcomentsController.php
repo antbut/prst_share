@@ -229,7 +229,12 @@ class PidrcomentsController extends Controller
             if($tupe_coment==1){    //если ето вторая итерация согласования подрядчика
                     
                 $model_p->status_pidr=1;
-                $model_p->status_objekt=7;
+                if($model_p->status_objekt!=20){
+                    $model_p->status_objekt=7;
+                }elseif ($model_p->status_dir_sc==1) {
+                    $model_p->status_objekt=7;
+                }
+                
                             
             }
             if($tupe_coment==2){    //если ето первая итерация согласования обла
@@ -237,7 +242,12 @@ class PidrcomentsController extends Controller
                 if($model_p->status_pidr==1 ){
                   //  $model_p->status_objekt=2;
                 }
-                $model_p->status_objekt=5;
+                if($model_p->status_objekt!=20){    //если по Д2
+                    $model_p->status_objekt=5;
+                }elseif ($model_p->status_pidr==1) {
+                    $model_p->status_objekt=7;
+                }
+                
                 $model_p->status_dir_sc=1;
 
                 $model_p->d_appryv_dkc=time();

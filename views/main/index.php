@@ -134,7 +134,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value' => function($data){
                     return Html::img(Url::toRoute(PidrStaus::findOne($data->status_pidr)->url),[
                         'alt'=>PidrStaus::findOne($data->status_pidr)->title,
-                        'style' => 'display: block; width:25px; margin:0 auto; '
+                        'style' => 'display: block; width:25px; align:center '
                     ]);
                 },
 				

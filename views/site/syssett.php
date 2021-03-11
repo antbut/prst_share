@@ -32,7 +32,8 @@ $this->title = 'My Yii Application';
          echo Html::a(Yii::t('app', 'запуск сброс в корзину по закінченнютерміну'), ['main/droppidrfromobject' ], ['class' => 'btn btn-primary']);
 
          echo "<br>";
-
+         echo Html::a(Yii::t('app', 'Проверка отправки почти'), ['site/testmail' ], ['class' => 'btn btn-primary']);
+         echo "<br>";
          echo Html::a(Yii::t('app', 'phpMyAdmin'), 'https://45.83.193.144:2003/phpmyadmin' , ['class' => 'btn btn-primary']);
          ?>
 

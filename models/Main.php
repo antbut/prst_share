@@ -80,8 +80,6 @@ class Main extends \yii\db\ActiveRecord
         Yii::$app->session->setFlash('success', 'Данні по обєкту змінені '.$this->id);
 
 
-        //send maill
-
         $SendTo=['a.butenko@oe.net.ua'];
  
        // $model = $this->findModel($id);
@@ -106,7 +104,7 @@ class Main extends \yii\db\ActiveRecord
                 $message[$send]->setFrom('ppryednyanna@gmail.com');
                 $message[$send]->setTo($send);
                 $message[$send]->setSubject('Стандартні приєднання ');
-                $message[$send]->setTextBody('Додані нові обєкти на порталі');
+                $message[$send]->setTextBody('Додані нові обєкти на порталі'. $this->n_dogoovor);
                    
                 //$message[$send]->setHtmlBody("<b>У вкладеному файлі ви знайдете ");
                 //$message[$send]->attach('/var/www/html/temp_data/'.$key.' '.$month.'.pdf');
@@ -117,7 +115,9 @@ class Main extends \yii\db\ActiveRecord
             }
         }
         if($this->status_objekt==3){  // розсылка ведомости обема работ реальной
+
              $SendTo=['a.butenko@oe.net.ua'];
+             $SendTo=explode(",", SysParam::GetParam('mail_info_vor'));
              foreach (json_decode ($this->file_resoyrs_report,true) as  $value) {
                         //echo '<p>'. $value['name'];
                         if( $value['r_type']=='d'){
@@ -145,6 +145,8 @@ class Main extends \yii\db\ActiveRecord
         }
         if($this->status_objekt==4 && $this->tupe_prodj_work==2){
             $SendTo=['a.butenko@oe.net.ua'];
+
+            $SendTo=explode(",", SysParam::GetParam('mail_info_d2'));
             foreach ($SendTo as $send){
                 $message[$send] =Yii::$app->mailer->compose();
                 $message[$send]->setFrom('ppryednyanna@gmail.com');

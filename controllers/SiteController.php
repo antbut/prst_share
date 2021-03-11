@@ -11,6 +11,7 @@ use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\User;
 use app\models\SysParam;
+use app\models\Mail;
 
 class SiteController extends Controller
 {
@@ -84,6 +85,12 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
+        return $this->render('index');
+    }
+
+     public function actionTestmail()
+    {
+        Mail::TestMail();
         return $this->render('index');
     }
 
