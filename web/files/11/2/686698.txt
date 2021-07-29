@@ -1,0 +1,33 @@
+
+Install Key from server
+--------------------------------------------------
+cscript.exe %windir%\system32\slmgr.vbs /ipk <KEY>
+
+
+
+Activation win serv 2016
+--------------------------------------------------
+cscript.exe %windir%\system32\slmgr.vbs /ipk CB7KF-BWN84-R7R2Y-793K2-8XDDG
+
+cscript.exe %windir%\system32\slmgr.vbs /ipk WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY standart
+
+cscript.exe %windir%\system32\slmgr.vbs /skms kms-server:1688
+
+cscript.exe %windir%\system32\slmgr.vbs /skms 192.168.225.5:1688
+
+cscript.exe %windir%\system32\slmgr.vbs /ato
+
+
+
+
+Activation office 16
+-----------------------------------------------------
+CD \Program Files\Microsoft Office\Office16
+
+cscript ospp.vbs /sethst:192.168.225.5
+
+cscript ospp.vbs /act
+
+
+cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99
+

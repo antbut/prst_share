@@ -45,7 +45,7 @@ class CronController extends Controller
   
     public function  actionDroppidrfromobject(){
         
-            $models= Main::find()->where(['!=','data_add_dok_poj',0])->all();
+            if($models= Main::find()->where(['!=','data_add_dok_poj',0])->all()){
            
       
             echo "start ". date('H:i d.M.Y',time()). " \n ";
@@ -69,22 +69,29 @@ class CronController extends Controller
                         }else{
                              if($data->status_pidr!=1 && $data->status_objekt<2){
                                 if($data->status_pidr!=3){
-
-                                    $model_org= Organizations::findOne($data->pidr);
-                                  //  $model_org->kill_deny_porj=$model_org->kill_deny_porj+1;
-                                    $model_org->save();
                                     
                                     $data->pidr=0;
                                     $data->status_pidr=2;
                                     $data->data_add_dok_poj=0;
-
-                                    $data->save(false);
+				    
+				    if($model_obj=Main::findOne($data->id)){
+				    
+					$model_obj->pidr=0;
+					$model_obj->data_add_dok_poj=0;
+				    
+                                	$model_obj->save(false);
+                                    }else{
+                                	echo "error found objekr $data->id ";
+                                    }
                                     echo $data->n_dogoovor.' Час вичерпано '."\n" ;
                                 }
                              }
 
                               
                         }
+            }
+            }else{
+        	echo "No objekts to dell";
             }
                     
             return ExitCode::OK;

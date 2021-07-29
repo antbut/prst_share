@@ -27,7 +27,10 @@ $this->params['breadcrumbs'][] = $this->title;
             echo $form->field($model, 'price_pidr_end')->textInput();
         }elseif ($tupe==1) {
             echo $form->field($model, 'price_dogovor_end')->textInput();
+        }elseif ($tupe==2) {
+            echo $form->field($model, 'price_dogovor')->textInput();
         }
+
         ?>
   
 

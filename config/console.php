@@ -18,9 +18,18 @@ $config = [
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
-	   'authManager' => [
+	'authManager' => [
             'class' => 'yii\rbac\DbManager',
         ],
+        'user' => [
+            'class' => 'yii\web\User',
+            'identityClass' => 'app\models\User',
+        ],
+
+        'session' => [ // for use session in console application
+            'class' => 'yii\web\Session'
+        ],
+
         'log' => [
             'targets' => [
                 [
@@ -33,8 +42,8 @@ $config = [
             'class' => 'kekaadrenalin\imap\Imap',
             'connection' => [
               'imapPath' => '{imap.gmail.com:993/imap/ssl}INBOX',
-              'imapLogin' => 'mail@gmail.com',
-              'imapPassword' => 'pass',
+              'imapLogin' => 'ppryednyanna@gmail.com',
+              'imapPassword' => 'Ssw23wss342@#',
               'serverEncoding'=>'encoding', // utf-8 default.
               //'attachmentsDir'=>'/'
 			  'attachmentsDir'=>'/home/soft/public_html/prst.in.ua/files/mail_attached/'

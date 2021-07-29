@@ -95,6 +95,11 @@ class MainController extends Controller
                     [
                         'actions' => ['addobjectprice'],
                         'allow' => true,
+                        'roles' => ['uploadProjectFiles','setPriсes'],
+                    ],
+                    [
+                        'actions' => ['addobjectpricep'],
+                        'allow' => true,
                         'roles' => ['uploadProjectFiles'],
                     ],
 					[
@@ -128,6 +133,11 @@ class MainController extends Controller
                         'allow' => true,
                         'roles' => ['dir_dep_pkv'],
                     ],
+                    [
+                        'actions' => ['changeobjstatus'],
+                        'allow' => true,
+                        'roles' => ['change_objekt_status'],
+                    ],
                     
                 ],
             ]
@@ -145,14 +155,18 @@ class MainController extends Controller
         Mail::GetMail_Resourse();
         if(\Yii::$app->user->can('admin') ){ 
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        }elseif(\Yii::$app->user->can('view_prod_all') ){ 
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         }elseif(\Yii::$app->user->can('dir_dep_pkv') ){ 
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         }elseif(\Yii::$app->user->can('contractor') ){ 
             $dataProvider = $searchModel->searchorg(Yii::$app->request->queryParams);
+        }elseif(\Yii::$app->user->can('contractor_bbi') ){ 
+            $dataProvider = $searchModel->searchorg(Yii::$app->request->queryParams);
         }elseif(\Yii::$app->user->can('top_manager') ){
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         }elseif(\Yii::$app->user->can('Projektant') ){
-            $dataProvider = $searchModel->searchpr(Yii::$app->request->queryParams);
+            $dataProvider = $searchModel->searchobl(Yii::$app->request->queryParams);
         }else{
             $dataProvider = $searchModel->searchobl(Yii::$app->request->queryParams);
         }
@@ -275,6 +289,8 @@ class MainController extends Controller
 				$dataProvider = $searchModel->searcbasketadmin(Yii::$app->request->queryParams);
 			}elseif(\Yii::$app->user->can('dir_dep_pkv') ){ 
 				$dataProvider = $searchModel->searcbasketadmin(Yii::$app->request->queryParams);
+            }elseif(\Yii::$app->user->can('Oblenergo') ){ 
+				$dataProvider = $searchModel->searcbasket_obl(Yii::$app->request->queryParams);
 			}else{
 				$dataProvider = $searchModel->searcbasket(Yii::$app->request->queryParams);
 			}
@@ -477,6 +493,8 @@ class MainController extends Controller
 
             $model->pidr=DistriktPidr::findOne($model->id_district)->id_pidr;
             $model->date_payment=strtotime(Yii::$app->request->post('data'));
+			
+			$model->date_norm_run_work=strtotime(Yii::$app->request->post('date_norm_run'));
             
 
             if($model->save()){
@@ -502,13 +520,25 @@ class MainController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
+		
+		$id_obl=$model->id_obl;
+		
+		$model->pidr=DistriktPidr::findOne($model->id_district)->id_pidr;
+		$model->date_payment=strtotime(Yii::$app->request->post('data'));
+		
+		if ($model->load(Yii::$app->request->post()) ) {
+			$model->date_last_update=time();
+			$model->date_payment=strtotime(Yii::$app->request->post('data'));
+            
+            $model->date_norm_run_work=strtotime(Yii::$app->request->post('date_norm_run'));
+            
+			if ( $model->save()) {
+				return $this->redirect(['view', 'id' => $model->id]);
+			}
+		}
 
         return $this->render('update', [
-            'model' => $model,
+            'model' => $model, 'id_obl' => $id_obl,
         ]);
     }
 
@@ -633,96 +663,60 @@ class MainController extends Controller
                             $model->file_resoyrs_report=json_encode($data_file);
 
                         break;
-                        case 5:
+                        case 5:   //Загрузи КБ3
                             $model->files_kb=json_encode($data_file);
-                            $model->status_objekt=8;
+                            $model->status_objekt=7;
 
                             $model->close_objekt=1;    // мітка що обєкт закрито
                         break;
 
                     }
-                    // якщо завантажено все з пункту 1
-                    if( $model->files_pojekt!=null &&  $model->files_smeta!=null && $model->price_pidr!=0 && $model->pidr!=0 && $model->status_objekt==0 && $model->price_dogovor!=0 && $model->file_resoyrs_report!= null && $model->status_objekt==0){
 
-                         // добавить проверку по смете П и Д
-                        
 
-                              $model->status_objekt=1;
-							  $model->data_add_dok_poj=time();
-						
-                        
-                    }
-                    
-                     // якщо завантажени відомість обему робіт фінальна
-                    if( $model->file_resoyrs_report!==null && $model->status_objekt==2){                                         
-                      
-                        foreach (json_decode($model->file_resoyrs_report, true) as $key => $value) {
-                            if($value['r_type']=='d'){
-                                $model->status_objekt=3;
-                                $model->status_vor=2;
-                                break;
-                            }
-                        } 
+                     // якщо завантажено Проект і вор
+                    if( $model->files_pojekt!=null && $model->file_resoyrs_report!==null && $model->status_objekt==0){
+                            $model->status_objekt=1;
+                            $model->data_add_dok_poj=time();
                     }
 
 
-                    // якщо завантажуємо оcтаточну версію П2 змінить статус обєкта
-                    if($model->price_pidr_end!=0 && $model->status_objekt==5 && $model->tupe_prodj_work!=2){
-                        foreach (json_decode($model->files_smeta, true) as $key => $value) {
-                            if($value['s_type']=='end'){
-                               foreach (json_decode($model->files_pojekt, true) as $key => $value) {
-                                   // if($value['p_type']=='end'){
-                                       
-                                        $model->status_objekt=6;
-                                        
-                                        $model->status_pidr=0;
-                                        
-                                   // }
-                                }
-                                break;
-                            }
-                        }
-                    }
+                    //  якшо проектант завантажив ВОР новий і новий проект
 
-
-                    // загрузка смета Д2 по д1
-                    if($model->status_objekt==4 && $model->tupe_prodj_work!=2){
-                        if($model->price_dogovor_end!=0){
-                            foreach (json_decode($model->files_smeta, true) as $key => $value) {
-                                if($value['s_type']=='d'){
-                                            $model->status_objekt=5;
-                                            break;                                
-                                }
-                            }
-                        }
-                    }
-
-                    // Загрузка по Д2 маршруту
-                    if($model->status_objekt==4 && $model->tupe_prodj_work==2){
-                    //    Yii::$app->session->setFlash('info', 'файли ');
+                    if($model->status_objekt==3){
                         foreach (json_decode($model->files_pojekt, true) as $key => $value) {
-                            if($value['p_type']=='p_d2'){
-                         //       Yii::$app->session->setFlash('warning', 'файли проекту');
-                               foreach (json_decode($model->files_smeta, true) as $key => $value_s) {
-                                    if($value_s['s_type']=='p_d2'){
-                                  //      Yii::$app->session->setFlash('info ', 'файли смета П');
-                                        foreach (json_decode($model->files_smeta, true) as $key => $value_ss) {
-                                            if($value_ss['s_type']=='d_d2'){
-                                        //        Yii::$app->session->setFlash('danger', 'файли смета Д');
-                                                $model->status_objekt=20;
-                                                break;
-                                            }
-                                        }
-                                        break;  
+                            if($value['p_type']=='p_d2'){  // загружена новая версия проекта
+                                foreach (json_decode($model->file_resoyrs_report, true) as $key => $value) {
+                                    if($value['r_type']=='d'){  // загружена ведомость обема работ реальна
+                                        $model->status_objekt=4;
+                                        $model->status_vor=2;
+										$model->date_add_vovr=time();
+                                        break;
+                                    }
+                                } 
+                                    
+                                break;
+                            }
+                        }
+
+                    }
+
+                    // якщо сметчик загрузив смету П Д і ціну
+
+                    if($model->status_objekt==4 && $model->files_smeta!=null && $model->price_pidr!=0 && $model->price_dogovor!=0 ){
+
+                        foreach (json_decode($model->files_smeta, true) as $key => $value) {
+                            if($value['s_type']=='p'){
+                                foreach (json_decode($model->files_smeta, true) as $key => $value) {
+                                    if($value['s_type']=='d'){
+                                            $model->status_objekt=5;
+                                        break;
                                     }
                                 }
                                 break;
                             }
                         }
-                        
+
                     }
-
-
 
 					$model->date_last_update=time();
                     $model->save(false);
@@ -739,7 +733,7 @@ class MainController extends Controller
          if ($model->load(Yii::$app->request->post()) ) {
 
             if( $model->files_pojekt!=null &&  $model->files_smeta!=null && $model->price_pidr!=0 && $model->pidr!=0 && $model->price_dogovor!=0 && $model->file_resoyrs_report!= null){
-                    $model->status_objekt=1;
+                  //  $model->status_objekt=1;
 					$model->data_add_dok_poj=time();
                 }
 
@@ -761,7 +755,7 @@ class MainController extends Controller
                     break;
                 }
 
-                 $koef=KoeficOrder::findOne(SysParam::GetParam($name_param_obl))->value;
+              //   $koef=KoeficOrder::findOne(SysParam::GetParam($name_param_obl))->value;
 
 
              //   $model->price_dogovor= $model->price_pidr*$koef;
@@ -785,81 +779,94 @@ class MainController extends Controller
 
     }
 
+    public function actionAddobjectpricep($id){
+         $model = $this->findModel($id);
+
+         if ($model->load(Yii::$app->request->post()) ) {
+
+
+                $model->date_last_update=time();
+            if($model->save()){
+                
+                                     
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
+        }
+        if(Yii::$app->request->isAjax){
+             return $this->renderAjax('addprice', [
+                'model' => $model, 
+            ]);
+        }else{
+            return $this->render('addprice', [
+                'model' => $model, 
+            ]);
+        }
+
+    }
+
     public function actionAddobjectprice($id, $tupe=0){
+
+        /*
+            $tupe=0     price_pidr_end          окончательная цена подрядчика
+            $tupe=1     price_dogovor_end       окончательная цена договора
+            $tupe=2     price_dogovor              цена договора
+
+        */
          $model = $this->findModel($id);
          $title =" задати";
 
+
+
         if ($model->load(Yii::$app->request->post()) ) {
 
-                if($tupe==0){
-                            foreach (json_decode($model->files_smeta, true) as $key => $value) {
-                                if($value['s_type']=='end'){
-                                   foreach (json_decode($model->files_pojekt, true) as $key => $value) {
-                                       // if($value['p_type']=='end'){
-                                           
-                                            $model->status_objekt=4;
-                                            if($model->status_pidr!=3)
-                                                $model->status_pidr=0;
-                                            break;
-                                       // }
-                                    }
-                                    break;
-                                }
-                            }
-                }elseif ($tupe==1) { //задать окнчательную цену договора
+            if($tupe==0){
+                            
+            }elseif ($tupe==1) { //задать окнчательную цену договора
 
-                    $procent= KoeficOrder::findOne($model->id_koef)->value*0.05;
-
+                $procent= KoeficOrder::findOne($model->id_koef)->value*0.05;
                     
-
-                    if($model->price_pidr==0){
-
-                        Yii::$app->session->setFlash('danger', 'Ще не задана ціна підрядника');
-                            $model->price_dogovor_end='не задана ціна підрядника';
-                            return $this->render('addprice', [
+                if($model->price_pidr==0){
+                    Yii::$app->session->setFlash('danger', 'Ще не задана ціна підрядника');
+                    $model->price_dogovor_end='не задана ціна підрядника';
+                    return $this->render('addprice', [
                                 'model' => $model, 
-                            ]);
-
-                    }
+                        ]);
+                }
             
-                    if($model->price_dogovor_end/$model->price_pidr> KoeficOrder::findOne($model->id_koef)->value-0.051 && $model->price_dogovor_end /$model->price_pidr < KoeficOrder::findOne($model->id_koef)->value+0.051){
+                //if($model->price_dogovor_end/$model->price_pidr> KoeficOrder::findOne($model->id_koef)->value-0.031 && $model->price_dogovor_end /$model->price_pidr < KoeficOrder::findOne($model->id_koef)->value+0.031){                            
+                if($model->price_dogovor_end/$model->price_dogovor> 0.981 && $model->price_dogovor_end /$model->price_dogovor < 1.031){                            
+                }else{
 
-                        $model->price_dogovor=$model->price_dogovor_end;
+                    Yii::$app->session->setFlash('danger', 'ціна не вписуєця в коефіціент даний коефіціент ');
+                    $model->price_dogovor_end='предложена ціна '. ($model->price_dogovor) ;
 
-                        // якщо завантажено все з пункту 1
-                        if($model->pidr!=0 && $model->status_objekt==0 && $model->price_dogovor!=0 && $model->file_resoyrs_report!= null){
-                           
-                                $model->status_objekt=1;
-                                $model->data_add_dok_poj=time();                          
-                        }
-                            
-                            
-                    }else{
-                            Yii::$app->session->setFlash('danger', 'ціна не вписуєця в коефіціент даний коефіціент '.$model->price_dogovor_end /$model->price_pidr);
-                            $model->price_dogovor_end='предложена ціна '. ($model->price_pidr*KoeficOrder::findOne($model->id_koef)->value) ;
-                            return $this->render('addprice', [
+                    return $this->render('addprice', [
                                 'model' => $model, 
                                 'tupe' =>$tupe,
                             ]);
-                    }
                 }
-                
-            
+            }elseif ($tupe==2) {
+                    # code...
+            }
 
 			$model->date_last_update=time();
-            if($model->save()){                                     
+            
+            if($model->save(false)){                                     
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } 
-                switch ($tupe) {
-                    case '1':
-                         $title = 'Задати ціну договору';
-                        break;
+            switch ($tupe) {
+                case '1':
+                     $title = 'Задати ціну договору остаточну';
+                    break;
+                case '2':
+                     $title = 'Задати ціну договору';
+                    break;
                     
-                    default:
-                         $title = 'Задати ціну ';
-                        break;
-                }    
+                default:
+                    $title = 'Задати ціну ';
+                    break;
+            }    
 
         if(Yii::$app->request->isAjax){
              return $this->renderAjax('addprice', [
@@ -875,7 +882,39 @@ class MainController extends Controller
             ]);
         }
     }
-
+	
+	public function  actionSetdate($id, $tupe=0){
+		/*
+			tupe = 0 - акт виконанних робіт
+		*/
+		$model = $this->findModel($id);
+        $title =" задати дату";
+		
+		if($tupe==0){
+			$title = "задати дату акладання акту виконаних робіт";
+		}
+		
+		if($model->load(Yii::$app->request->post()) ) {
+			if($tupe==0){
+				$model->date_avr=strtotime(Yii::$app->request->post('data'));
+			}
+		}
+		
+		if(Yii::$app->request->isAjax){
+             return $this->renderAjax('adddate', [
+                'model' => $model, 
+                'tupe' => $tupe,
+                'title_o' =>  $title,
+            ]);
+        }else{
+            return $this->render('adddate', [
+                'model' => $model, 
+                'tupe' => $tupe,
+                'title_o' =>  $title,
+            ]);
+        }
+		
+	}
     public function  actionViewpdf($id){
 
         $model=$this->findModel($id);
@@ -1236,4 +1275,24 @@ class MainController extends Controller
         //$mailbox->expungeDeletedMails(); // Deletes all marked mails
         return true;
     }
+
+    public function actionChangeobjstatus($id)  //принудительно сменить статус обэкта
+    {
+    	$model=$this->findModel($id);
+       
+
+        if ($model->load(Yii::$app->request->post()) ) {
+
+            if($model->save()){
+                return $this->render('view', [
+                    'model' => $model, 
+                ]);
+            }
+        }
+        return $this->render('changeobjstatus', [
+                    'model' => $model, 
+                ]);
+    }
+
+
 }

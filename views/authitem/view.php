@@ -25,6 +25,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
+
+        <?= Html::a('Add Rules', ['addpermisiontorole', 'id' => $model->name], ['class' => 'btn btn-primary']) ?>
     </p>
 
     <?= DetailView::widget([
@@ -43,11 +45,15 @@ $this->params['breadcrumbs'][] = $this->title;
     <h4>Доступні дозволи</h4>
 <?php
     if($permisions){
+
+        echo "<table>";
+        echo "<tr><th>назва в системі</th><th>опис ролі</th></tr>";
         foreach ($permisions as  $permision) {
 
-            echo $permision->child.' -  '.AuthItem::findOne(['name'=>$permision->child])->description."<br>";
+            echo '<tr><td>'.$permision->child.' </td><td> '.AuthItem::findOne(['name'=>$permision->child])->description."</td><tr>";
             
         }
+        echo "</table>";
     }
 ?>
     <pre>

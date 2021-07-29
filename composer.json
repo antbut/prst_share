@@ -25,7 +25,8 @@
         "bluezed/yii2-float-thead": "*",
         "kartik-v/yii2-mpdf": "dev-master",
         "kartik-v/yii2-export": "@dev",
-        "kartik-v/yii2-grid": "dev-master"
+        "kartik-v/yii2-grid": "dev-master",
+        "kekaadrenalin/yii2-imap": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

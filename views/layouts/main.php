@@ -59,12 +59,26 @@ AppAsset::register($this);
                     ]];
     }
 
+    if(\Yii::$app->user->can('reports')){
+       $menyItem[]=['label' => 'Звіти', 'items' =>[
+                        ['label' => 'Кількість по обєктам', 'url' => ['/report/objetlcount']],
+                        ['label' => 'Обєкти по облам', 'url' => ['/report/oblobjets']],
+                        
+                    ]];
+    }
+
 
     if(Yii::$app->user->isGuest) {
                 $menyItem[]=['label' => 'Логін', 'url' => ['/site/login']];
     }else{
 
             $menyprofitem[]=['label' => 'Профіль', 'url' => ['/user/update', 'id'=>Yii::$app->user->identity->id]];
+
+            if(\Yii::$app->user->can('view_objekts_log')){
+
+                $menyprofitem[]=['label' => 'Історія по моїм обєктам', 'url' => ['/objectlog/index']];
+            }
+
             $menyprofitem[]=  '<li>'
                 . Html::beginForm(['/site/logout'], 'post')
                 . Html::submitButton(

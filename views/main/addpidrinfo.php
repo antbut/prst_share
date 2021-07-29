@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $form->field($model, 'price_pidr')->textInput() ?>
 
-    <?= $form->field($model, 'pidr')->dropDownList(ArrayHelper::map(Organizations::find()->where(['id'=>ParentOrg::GetCostemerObl($model->id_obl) ])->all(), 'id', 'title')) ?>
+    <?//= $form->field($model, 'pidr')->dropDownList(ArrayHelper::map(Organizations::find()->where(['id'=>ParentOrg::GetCostemerObl($model->id_obl) ])->all(), 'id', 'title')) ?>
 
     <?php 
    //     echo $model->id_obl;

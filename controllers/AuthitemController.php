@@ -47,6 +47,12 @@ class AuthitemController extends Controller
                     'roles' => ['admin'],
                 ],
                 [
+                    'actions' => ['addpermisiontorole'],
+                    'allow' => true,
+                    'roles' => ['admin'],
+                ],
+
+                [
                     'actions' => ['update'],
                     'allow' => true,
                     'roles' => ['admin'],
@@ -174,5 +180,30 @@ class AuthitemController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionAddpermisiontorole($id)
+    {
+       // $model_r = $this->findModel($id);
+
+       // $permisions= AuthItemChild::find()->where(['parent'=>$model->name])->all();
+
+        $model = new AuthItemChild();
+
+        if ($model->load(Yii::$app->request->post()) ) {
+            
+            $model->parent=$id;
+
+            if($model->save(false)){
+                return $this->redirect(['view', 'id' => $id]);
+            }
+
+            
+        }
+
+        return $this->render('addpermis', [
+            'model' => $model,
+            //'permisions'=>$permisions,
+        ]);
     }
 }

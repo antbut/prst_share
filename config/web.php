@@ -8,7 +8,7 @@ $config = [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
 	'language' => 'uk-UK',
-    'name'=>'You name',
+    'name'=>'Стандартні приєднання',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -25,7 +25,7 @@ $config = [
             'cookieValidationKey' => 'F0-QU3Q87rAlqJEzz88VgxzQs9IsOABx',
         ],
 
-	   'authManager' => [
+	'authManager' => [
             'class' => 'yii\rbac\DbManager',
         ],
         'cache' => [
@@ -47,8 +47,8 @@ $config = [
             'transport' => [
                 'class' => 'Swift_SmtpTransport',
                 'host' => 'smtp.gmail.com',  // e.g. smtp.mandrillapp.com or smtp.gmail.com
-                'username' => 'Mail@gmail.com',
-                'password' => 'pass',
+                'username' => 'ppryednyanna@gmail.com',
+                'password' => 'Ssw23wss342@#',
                 'port' => '465', // Port 25 is a very common port too
                 'encryption' => 'ssl', // It is often used, check your provider or mail server specs
             ],
@@ -58,8 +58,8 @@ $config = [
             'class' => 'kekaadrenalin\imap\Imap',
             'connection' => [
               'imapPath' => '{imap.gmail.com:993/imap/ssl}INBOX',
-              'imapLogin' => 'mail@gmail.com',
-              'imapPassword' => 'pass',
+              'imapLogin' => 'ppryednyanna@gmail.com',
+              'imapPassword' => 'Ssw23wss342@#',
               'serverEncoding'=>'encoding', // utf-8 default.
               //'attachmentsDir'=>'/'
 			  'attachmentsDir'=>'/home/soft/public_html/prst.in.ua/files/mail_attached/'
@@ -102,7 +102,7 @@ if (YII_ENV_DEV) {
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        'allowedIPs' => ['127.0.0.1', '::1', '192.168.33.180', '192.168.33.204'],
+        'allowedIPs' => ['127.0.0.1', '::1', '192.168.33.180', '192.168.33.204','10.13.0.9','192.168.225.20','95.158.11.15'],
     ];
 }
 

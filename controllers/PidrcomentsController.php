@@ -52,7 +52,7 @@ class PidrcomentsController extends Controller
 					[
                         'actions' => ['noagree'],
                         'allow' => true,
-                        'roles' => ['contractor'],
+                        'roles' => ['agri_coment'],
                     ],
 					[
                         'actions' => ['coment'],
@@ -174,7 +174,8 @@ class PidrcomentsController extends Controller
     public function actionAgree($id_project, $tupe_coment=0){
 
         /* $tupe_coment=0 подрядчик погоджуєця на роботу
-            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД */
+            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД
+            $tupe_coment=2 согласование директора сервисного центра */
 
         $model_p= Main::findOne($id_project);
         $model =  new PidrComents();
@@ -184,8 +185,11 @@ class PidrcomentsController extends Controller
             $model->id_organization=User::findOne(Yii::$app->user->id)->id_organization;
 
             $model->coment='Погоджено підрядником';
+            if($tupe_coment==1){ 
+                $model->coment='Погоджено остаточну ціну ';
+            }
             if($tupe_coment==2){  
-                $model->coment='Погоджено директором сервісного центру';
+                $model->coment='Надано графік робіт';
             }
 
             $model->tupe_coment=$tupe_coment;
@@ -223,34 +227,21 @@ class PidrcomentsController extends Controller
             }
             if($tupe_coment==0){    //если ето первая итерация согласования подрядчика
                 $model_p->status_pidr=1;
-            //    $model_p->status_objekt=2;
+                $model_p->date_status_pidr=time();
+                $model_p->status_objekt=2;
                 $model_p->data_add_dok_poj=0;
             }
-            if($tupe_coment==1){    //если ето вторая итерация согласования подрядчика
-                    
-                $model_p->status_pidr=1;
-                if($model_p->status_objekt!=20){
-                    $model_p->status_objekt=7;
-                }elseif ($model_p->status_dir_sc==1) {
-                    $model_p->status_objekt=7;
-                }
-                
-                            
+            if($tupe_coment==1){    //если ето вторая итерация согласования подрядчика        
+                $model_p->status_pidr_pd=1;
+            
             }
-            if($tupe_coment==2){    //если ето первая итерация согласования обла
-                
-                if($model_p->status_pidr==1 ){
-                  //  $model_p->status_objekt=2;
-                }
-                if($model_p->status_objekt!=20){    //если по Д2
-                    $model_p->status_objekt=5;
-                }elseif ($model_p->status_pidr==1) {
-                    $model_p->status_objekt=7;
-                }
-                
+            if($tupe_coment==2){    //если согласовани графика работ
+                                
+                $model_p->status_objekt=3;
                 $model_p->status_dir_sc=1;
+                $model_p->date_status_dir_sc=time();
 
-                $model_p->d_appryv_dkc=time();
+             //   $model_p->d_appryv_dkc=time();
             }
 
 			$model_p->date_last_update=time();
@@ -264,7 +255,8 @@ class PidrcomentsController extends Controller
 
     public function actionNoagree($id_project, $tupe_coment=0){
          /* $tupe_coment=0 подрядчик погоджуєця на роботу
-            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД */
+            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД 
+            $tupe_coment=2  директор сервисного центра*/
 
         $model_p= Main::findOne($id_project);
         $model =  new PidrComents();
@@ -274,6 +266,9 @@ class PidrcomentsController extends Controller
             $model->coment='Не погоджено підрядником';
             $model->id_organization=User::findOne(Yii::$app->user->id)->id_organization;
             $model->tupe_coment=$tupe_coment;
+            if($tupe_coment==2){  
+                $model->coment='Не надано графік робіт';
+            }
 
       //  $model->save(false);
 
@@ -283,6 +278,11 @@ class PidrcomentsController extends Controller
                 $model_org->kill_deny_porj=$model_org->kill_deny_porj+1;
                 $model_org->save();
 
+                $model_p->status_objekt=1;
+                $model_p->status_pidr=2;
+                $model_p->pidr=0;
+            }
+            if($tupe_coment==2){
                 $model_p->status_objekt=1;
                 $model_p->status_pidr=2;
                 $model_p->pidr=0;
@@ -307,7 +307,8 @@ class PidrcomentsController extends Controller
     public function actionComent($id_project, $tupe_coment=0)
     {
         /* $tupe_coment=0 подрядчик погоджуєця на роботу
-            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД */
+            $tupe_coment=1 подрядчик погоджує фінальну версію  ПКД 
+            $tupe_coment=2 погодження директора сервісного центру*/
         $model_p= Main::findOne($id_project);
 
         $model = new PidrComents();
@@ -329,9 +330,12 @@ class PidrcomentsController extends Controller
                             $model_p->status_pidr=4;
                         }
                     }
+
                     if($tupe_coment==1){    //если ето согласование ПКД
-                        $model_p->status_pidr=3;
+                       // $model_p->status_pidr=3;
+                        $model_p->status_pidr_pd=3;
                     }
+
                     if($tupe_coment==2){
                         $model_p->d_appryv_dkc=-1;
 
@@ -390,7 +394,8 @@ class PidrcomentsController extends Controller
 				}
 
                 if ($tupe_coment==1){
-                    $model_p->status_pidr=0;
+                    //$model_p->status_pidr=0;
+                    $model_p->status_pidr_pd=0;
                 }
 
                 if ($tupe_coment==2){
